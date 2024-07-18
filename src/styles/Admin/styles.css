@@ -1,0 +1,27 @@
+
+
+.AdminController {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 90vh;
+    width: 100%;
+    
+}
+
+.AdminDiv1 {
+    gap: 20px;
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 2px 4px 5px 0px rgba(0, 0, 0, 0.1);
+
+    input {
+        border: 1px solid;
+        border-radius: 4px;
+    }
+}
