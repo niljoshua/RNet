@@ -1,4 +1,6 @@
+import { useContext } from 'react';
 import styled from 'styled-components';
+import { UtilsContext } from '../../Providers/utilsProvider';
 
 const Ul = styled.ul`
   list-style: none;
@@ -87,9 +89,12 @@ text-decoration: none;
 `;
 
 const RightNav = ({ open }) => {
+
+  const { handleOpenModalCotas } = useContext(UtilsContext);
+
   return (
-    <Ul open={open}>
-      <a href='/minhascotas'><button className='cotas'> 🔎 Minhas cotas</button></a>
+    <Ul open={open} >
+      <button className='cotas' onClick={handleOpenModalCotas}>🔎 Minhas cotas</button>
     </Ul>
   )
 }

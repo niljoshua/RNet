@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import styled from 'styled-components';
 import RightNav from './RightNav';
+import { MinhasCotas } from '../../pages/minhascotas';
 
 const StyledBurger = styled.div`
   width: 2rem;
@@ -53,6 +54,7 @@ const Burger = () => {
         <div />
       </StyledBurger>
       <RightNav open={open}/>
+      <MinhasCotas />
     </>
   )
 }

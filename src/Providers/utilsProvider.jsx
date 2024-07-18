@@ -8,6 +8,7 @@ export const UtilsContext = createContext({});
 
 export const UtilsProvider = ({ children }) => {
   const [modalOpen, setModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const modalRef = useRef(null);
 
   const [valorCotasRifa, setValorCotasRifa] = useState('');
@@ -107,6 +108,17 @@ export const UtilsProvider = ({ children }) => {
     setModalOpen(false);
   };
 
+
+  const handleOpenModalCotas = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModalCotas = () => {
+    setIsModalOpen(false);
+    window.location.reload();
+  };
+
+
   const handleInputChange = (e) => {
     setValorCotasRifa(e.target.value);
   };
@@ -194,27 +206,68 @@ export const UtilsProvider = ({ children }) => {
 
   ///Envio 
   const onSubmit = async (formData) => {
-    const uniqueId = await generateUniqueId();
-
-    const numerosGerados = gerarNumerosAleatorios(); // Generate numbers before sending data
-
+    const numerosGerados = gerarNumerosAleatorios(); // Gerar números antes de enviar dados
+  
     try {
-      const response = await api.post('/usuarios', {
-        id: uniqueId,
-        name: formData.name,
-        phone: formData.phone,
-        cotas: numerosGerados // Use the generated numbers
-      });
-      console.log('Dados enviados com sucesso:', response.data);
+      // Verifica se o telefone já existe
+      const response = await api.get(`/usuarios?phone=${formData.phone}`);
+      
+      // Adicione um log para depuração
+      console.log('Resposta da API:', response.data);
+  
+      const usuariosExistentes = Array.isArray(response.data) ? response.data : [];
+      
+      if (usuariosExistentes.length > 0) {
+        // Pega o primeiro usuário encontrado
+        const usuarioExistente = usuariosExistentes[0];
+  
+        // Adicione um log para depuração
+        console.log('Usuário existente:', usuarioExistente);
+  
+        // Verifica se o usuário e as cotas são válidos
+        if (!usuarioExistente || !Array.isArray(usuarioExistente.cotas)) {
+          console.warn('Dados do usuário não encontrados ou estrutura inválida. Usando dados padrão.');
+          const novasCotas = numerosGerados;
+          await api.put(`/usuarios/${usuarioExistente.id}`, {
+            ...usuarioExistente,
+            cotas: novasCotas
+          });
+  
+          console.log('Cotas atualizadas com sucesso:', novasCotas);
+        } else {
+          const cotasExistentes = usuarioExistente.cotas || []; // Garante que cotasExistentes é um array
+          const novasCotas = [...cotasExistentes, ...numerosGerados];
+  
+          await api.put(`/usuarios/${usuarioExistente.id}`, {
+            ...usuarioExistente,
+            cotas: novasCotas
+          });
+  
+          console.log('Cotas atualizadas com sucesso:', novasCotas);
+        }
+      } else {
+        // Se o telefone não existe, criar um novo usuário com os números gerados
+        const uniqueId = await generateUniqueId();
+        await api.post('/usuarios', {
+          id: uniqueId,
+          name: formData.name,
+          phone: formData.phone,
+          cotas: numerosGerados
+        });
+  
+        console.log('Dados enviados com sucesso:', { id: uniqueId, name: formData.name, phone: formData.phone, cotas: numerosGerados });
+        setCurrentId(uniqueId + 1);
+      }
+  
     } catch (error) {
-      console.error('Erro ao enviar dados:', error);
+      console.error('Erro ao verificar ou enviar dados:', error);
     }
-
+  
     reset();
-    setCurrentId(uniqueId + 1);
     handleCloseModal();
-    // window.location.reload()
+    window.location.reload();
   };
+  
 
   return (
     <UtilsContext.Provider value={{
@@ -226,7 +279,7 @@ export const UtilsProvider = ({ children }) => {
       quantidadeCotasRifa, setQuantidadeCotasRifa,
       valorCotasRifa, setValorCotasRifa,
       setModalOpen, modalOpen,
-
+      isModalOpen, handleOpenModalCotas, handleCloseModalCotas,
       handleOpenModal, handleCloseModal,
       handleInputChange, handleInputChangeQ, handleSalvar, handleSubmit,
     }}>

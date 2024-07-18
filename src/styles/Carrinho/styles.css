@@ -1,4 +1,111 @@
-
 .carrinhoController {
     display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  input {
+        display: block;
+        width: 100%;        
+        padding: .375rem .75rem;
+        --tw-text-opacity: 1;
+        color: rgb(17 24 39);
+        --tw-ring-inset: inset;
+        --tw-ring-opacity: 1;
+        --tw-ring-color: rgb(209 213 219);
+  }
+  
+  .carrinhoCenter {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  }
+  
+  .carrinhoClose {
+    cursor: pointer;
+    float: right;
+    font-size: 1.5rem;
+  }
+  
+  .carrinhoDivContent {
+    display: flex;
+    flex-direction: column;
+    padding: 20px 10px;   
+    box-sizing: border-box;
+  }
+
+  .carrinhoBtn {
+    text-align: center;
+        width: 100%;
+        margin-top: 1.5rem;
+        --tw-bg-opacity: 1;
+        background-color: #163c5c;
+        --tw-text-opacity: 1;
+        color: rgb(255 255 255);
+        display: flex;
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        gap: .75rem;
+        border-radius: .375rem;
+        border-width: 1px;
+        border-color: rgb(203 213 225);
+        padding: .625rem 1rem;
+        font-size: .875rem;
+        line-height: 1.25rem;
+        font-weight: 500;
+  }
+
+.carrinhoBtn:hover {
+    color: #fff;
+    background-color: #005296;
+    filter: brightness(1.1);
+    transform: scale(1.01);
+    transition: ease-in-out 0.2s;
+}
+
+.div {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 1rem;
+}
+
+.divTittle {
+  display: flex;
+  margin-top: 2rem;
+}
+
+.carrinhoNumeroCotas {
+  display: flex;
+  gap: 10px;
+  list-style-type: none;
+  padding: .4rem;
+  font-weight: 600;
+  width: 2.6rem;
+  border-width: 1px;
+  border-radius: .5rem;
+  cursor: default;
+  align-items: center;
+  justify-content: center;
+  border-color: rgb(203 213 225);
+  background-color: rgb(238, 238, 238);
+    
+}
+
+.carrinhoSpan {
+  color: #0D2538  !important;
+  font-weight: 500  !important;
+  font-size: 1rem  !important;
+
 }

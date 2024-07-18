@@ -9,7 +9,7 @@ import { UtilsContext } from '../../Providers/utilsProvider';
 // eslint-disable-next-line react/prop-types
 export const Modal = () => {
 
-    const { register, errors , modalRef, modalOpen, handleSubmit, onSubmit, setNome, handleCloseModal } = useContext(UtilsContext)
+    const { register, errors , modalRef, modalOpen, handleSubmit, onSubmit, handleCloseModal } = useContext(UtilsContext)
         
     return (
         <form onSubmit={handleSubmit(onSubmit)} className={`modal ${modalOpen ? 'open' : ''}`}>

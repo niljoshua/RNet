@@ -1,4 +1,5 @@
 import { Navbar } from "./components/Nav/Navbar"
+import { CotasProvider } from "./Providers/cotasProviders"
 import { UsuarioProvider } from "./Providers/dataProviders"
 import { UtilsProvider } from "./Providers/utilsProvider"
 import { RoutesMain } from "./routes/routes"
@@ -10,8 +11,10 @@ function App() {
     <>
     <UsuarioProvider>
       <UtilsProvider>
-        <Navbar />
-        <RoutesMain />
+      <CotasProvider>
+          <Navbar />
+          <RoutesMain />
+        </CotasProvider>
       </UtilsProvider>
     </UsuarioProvider>
     </>
