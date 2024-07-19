@@ -30,7 +30,7 @@ export const CotasProvider = ({children}) => {
         setError('Nenhum usuário encontrado com este número de telefone.');
       }
     } catch (err) {
-      setError('Erro ao buscar as cotas. Tente novamente mais tarde.');
+      setError('Numero de telefone não cadastrado.');
       setShares([]);
     }
   };
