@@ -296,7 +296,7 @@
   padding: 12.5px;
   transition: 300ms;
   cursor: pointer;
-  width: 35vw;
+  width: 100%;
 }
 
 .footerConfirm:hover {

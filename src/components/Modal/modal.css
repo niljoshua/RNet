@@ -8,7 +8,7 @@
     background-color: rgba(0, 0, 0, 0.5);
     justify-content: center;
     align-items: center;
-    z-index: 99;
+    z-index: 40;
 }
 
 .modal.open {
@@ -23,7 +23,7 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
-    width: 40vw;
+    width: 30vw;
 
     button {
         align-self: center;
@@ -47,8 +47,96 @@ input {
     cursor: pointer;
     border-width: 1px;
     border-radius: 4px;
+    padding: 2px 5px;
+    height: 30px;
+    width: 23px;
 }
 
 .X:hover {
     background-color: #f3f3f3;
+}
+
+.btn_copiar {
+    background-color: #163c5c;
+    color: white;
+    border-radius: 4px;
+    padding: 5px 10px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.input_qr_code{
+    cursor: default;
+}
+
+.img_qr_code {
+    user-select: none !important; 
+    pointer-events: none !important;
+}
+
+.qr_code_total {
+    color: green;
+    font-size: 19px;
+    font-weight: bold;
+}
+.notification-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #163c5c;
+    color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    z-index: 99; /* Certifique-se de que o modal está acima de outros conteúdos */
+    /* opacity: 0; */
+    transition: opacity 0.5s ease;
+}
+
+.notification-content {
+    text-align: center;
+}
+
+.modal_qr_code {
+
+    display: flex;
+    flex-direction: column;
+
+    p {
+        text-align: center;
+
+    }
+
+    .img_area_qr_code {
+        justify-content: center;
+        display: flex;
+    }
+}
+
+.time_qr_code {
+    font-weight: bold;
+
+    span{
+        color: blue;
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 680px) {
+    .modal-content {
+      width: 90vw;
+    }
+
+    .carrinhoCenter {
+        padding: 10px;
+        width: 90vw;  
+    }
+}
+
+
+@media (min-width: 680px) and (max-width: 2560px)  {
+    .modal-content {
+      width: 500px;
+    }
 }

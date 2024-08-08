@@ -1,32 +1,51 @@
 import { useContext } from 'react';
 import '../styles/Admin/styles.css';
-import { UtilsContext } from '../Providers/utilsProvider';
+import { api } from '../services/api';
+import { AdminContext } from '../Providers/adminProviders';
 
 export const Admin = () => {
+       const { valorCotasRifa, quantidadeCotasRifa, handleInputValorCota, handleInputQuantidadeCota } = useContext(AdminContext);
 
-    const {valorCotasRifa, quantidadeCotasRifa, handleInputChange, handleInputChangeQ, handleSalvar } = useContext(UtilsContext)
 
+    const handleSubmit = async () => {
     
+        try {
+            const response = await api.post('/cotas', {
+                id: 1,  // Ajuste conforme necessário
+                valorCotasRifa,
+                quantidadeCotasRifa,
+            });
+    
+            if (response.status === 200) {
+                console.log('Dados atualizados com sucesso!');
+                window.location.reload();
+            } else {
+                console.error('Erro ao atualizar os dados.');
+            }
+        } catch (error) {
+            console.error('Erro ao atualizar os dados:', error);
+        }
+    };
 
     return (
         <div className='AdminController'>
             <div className='AdminDiv1'>
                 <span>Escolha o valor da cota</span>
                 <input
-                type="number"
-                value={valorCotasRifa}
-                onChange={handleInputChange}
-            />
+                    type="number"
+                    value={valorCotasRifa}
+                    onChange={handleInputValorCota}
+                />
 
-            <span>Escolha a quantidade de cota</span>
-            <input
-                type="number"
-                value={quantidadeCotasRifa}
-                onChange={handleInputChangeQ}
-            />
+                <span>Escolha a quantidade de cota</span>
+                <input
+                    type="number"
+                    value={quantidadeCotasRifa}
+                    onChange={handleInputQuantidadeCota}
+                />
 
-            <button onClick={handleSalvar}>Salvar</button>
+                <button className='Save' onClick={handleSubmit}>Salvar</button>
             </div>
         </div>
-    )
-}
+    );
+};

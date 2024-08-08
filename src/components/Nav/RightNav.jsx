@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import styled from 'styled-components';
-import { UtilsContext } from '../../Providers/utilsProvider';
+import { CotasContext } from '../../Providers/cotasProviders';
 
 const Ul = styled.ul`
   list-style: none;
@@ -55,17 +55,17 @@ text-decoration: none;
 }
 
   @media (max-width: 768px) {
-    flex-flow: column nowrap;
-    background-color: #0D2538;
-    position: fixed;
-    transform: ${({ open }) => open ? 'translateX(0)' : 'translateX(100%)'};
-    top: 0;
-    right: 0;
-    height: 100vh;
-    width: 300px;
-    padding-top: 3.5rem;
-    transition: transform 0.3s ease-in-out;
-    text-decoration: none;
+        flex-flow: column nowrap;
+        background-color: #0D2538;
+        position: fixed;
+         transform: ${({ open }) => open ? 'translateX(0)' : 'translateX(100%)'};
+        top: 65px;
+        right: 0;
+        height: 60px;
+        width: 100%;
+        padding-top: 10px;
+        transition: transform 0.3s ease-in-out;
+        text-decoration: none;
 
     li {
       color: #fff; 
@@ -77,8 +77,10 @@ text-decoration: none;
     }
 
     .cotas {
-      color: #0D2538;
-      background-color: #f1f1f0;
+        color: #0D2538;
+        background-color: #f1f1f0;
+        left: 15px;
+        position: absolute;
     } 
     
     .cotas:hover {
@@ -90,7 +92,7 @@ text-decoration: none;
 
 const RightNav = ({ open }) => {
 
-  const { handleOpenModalCotas } = useContext(UtilsContext);
+  const { handleOpenModalCotas } = useContext(CotasContext);
 
   return (
     <Ul open={open} >

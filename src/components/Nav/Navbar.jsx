@@ -16,8 +16,8 @@ const Nav = styled.nav`
   font-size: 16px;
   font-weight: bold;
   -webkit-box-shadow: 2px 4px 5px 0px rgba(0,0,0,0.1);
--moz-box-shadow: 2px 4px 5px 0px rgba(0,0,0,0.1);
-box-shadow: 2px 4px 5px 0px rgba(0,0,0,0.1);
+  -moz-box-shadow: 2px 4px 5px 0px rgba(0,0,0,0.1);
+  box-shadow: 2px 4px 5px 0px rgba(0,0,0,0.1);
 text-decoration: none;
   
   .logo {

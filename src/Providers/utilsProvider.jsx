@@ -1,289 +1,272 @@
-import { createContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useRef, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { api } from "../services/api";
+import { api, pix } from "../services/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { formSchema } from "../services/zod";
+import { UsuarioContext } from "./dataProviders";
 
 export const UtilsContext = createContext({});
 
 export const UtilsProvider = ({ children }) => {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const modalRef = useRef(null);
+    const { listCotas, nCotas, valorCotas } = useContext(UsuarioContext);
+    const [nCotasGeradas, setNCotasGeradas] = useState(0);
+   
+    const [valorTotalCotas, setValorTotalCotas] = useState(0);
+    const [inputBloqueado, setInputBloqueado] = useState(false);
+    
 
-  const [valorCotasRifa, setValorCotasRifa] = useState('');
-  const [quantidadeCotasRifa, setQuantidadeCotasRifa] = useState('');
-  const [nCotasGeradas, setNCotasGeradas] = useState(1);
-  const [todosNumerosDeCotas, setTodosNumerosDeCotas] = useState([0]);
-  const [limiteCotas, setLimiteCotas] = useState(0);
-  
-  const [currentId, setCurrentId] = useState(1);
-  const [usuarios, setUsuarios] = useState([]);
+    const [pixData, setPixData] = useState(null);
+    const [timeLeft, setTimeLeft] = useState(0);
+    const [status, setStatus] = useState(null);
+    const [transactionId, setTransactionId] = useState(null);
 
-  useEffect(() => {
-    const fetchUsuarios = async () => {
-      try {
-        const response = await api.get('/usuarios');
-        setUsuarios(response.data);
-      } catch (error) {
-        console.error('Erro ao buscar dados de usuários:', error);
-      }
-    };
+    const { reset, register, handleSubmit, formState: { errors } } = useForm({
+        resolver: zodResolver(formSchema),
+    });
 
-    const fetchLastId = async () => {
-      try {
-        const { data } = await api.get('/usuarios');
-        const usuarios = data.filter(user => user && user.id !== undefined);
-        const lastId = usuarios.length > 0 ? Math.max(...usuarios.map(user => user.id)) : 0;
-        return lastId;
-      } catch (error) {
-        console.error('Erro ao buscar o último ID:', error);
-        return 0;
-      }
-    };
-
-    const generateNextId = async () => {
-      const lastId = await fetchLastId();
-      setCurrentId(lastId + 1);
-    };
-
-    fetchUsuarios();
-    generateNextId();
-  }, []);
-
-  useEffect(() => {
-    const extrairTodosNumerosDeCotas = () => {
-      const numerosDeCotas = usuarios.flatMap(user => user.cotas || []);
-      const numerosUnicos = Array.from(new Set(numerosDeCotas));
-      setTodosNumerosDeCotas(numerosUnicos);
-    };
-
-    extrairTodosNumerosDeCotas();
-  }, [usuarios]);
-
-  useEffect(() => {
-    const fetchNCotasFromAPI = async () => {
-      try {
-        const { data } = await api.get('/db_cotas');
-        setQuantidadeCotasRifa(parseInt(data[0].n_cotas));
-      } catch (error) {
-        console.error('Erro ao buscar n_cotas:', error);
-      }
-    };
-
-    const limiter = quantidadeCotasRifa - todosNumerosDeCotas.length;
-    setLimiteCotas(limiter >= 0 ? limiter : 0);
-
-    fetchNCotasFromAPI();
-  }, [quantidadeCotasRifa, todosNumerosDeCotas.length]);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalOpenConfirm, setModalOpenConfirm] = useState(false);
+    const [isConfirmModalOpened, setIsConfirmModalOpened] = useState(false); 
 
 
-  const [inputBloqueado, setInputBloqueado] = useState(false);
-
-  useEffect(() => {
-      // Reduzir a quantidadeCotasRifa pelos números em todosNumerosDeCotas
-      const reduzirQuantidadeCotas = () => {
-          
-          if (limiteCotas <= 0) {
-              setInputBloqueado(true);
-          } else {
-              setInputBloqueado(false);
-          }
-      };
-      
-      // Chame a função para reduzir a quantidadeCotasRifa sempre que todosNumerosDeCotas mudar
-      reduzirQuantidadeCotas();
-
-  }, [limiteCotas]); 
-
-  const { reset, register, handleSubmit, formState: { errors } } = useForm({
-    resolver: zodResolver(formSchema),
-  });
-
-  const handleOpenModal = () => {
-    setModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setModalOpen(false);
-  };
-
-
-  const handleOpenModalCotas = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModalCotas = () => {
-    setIsModalOpen(false);
-    window.location.reload();
-  };
-
-
-  const handleInputChange = (e) => {
-    setValorCotasRifa(e.target.value);
-  };
-
-  const handleInputChangeQ = (e) => {
-    setQuantidadeCotasRifa(e.target.value);
-  };
-
-  const handleSalvar = async (e) => {
-    e.preventDefault();
-    const dadoCotas = { id: 1, n_cotas: quantidadeCotasRifa, valor_cotas: valorCotasRifa };
-
-    localStorage.setItem('preco', valorCotasRifa);
-    localStorage.setItem('numeroCotas', quantidadeCotasRifa);
-    alert('Valor salvo!');
-
-    try {
-      const response = await api.post('/db_cotas', dadoCotas);
-      console.log('Dados enviados com sucesso:', response.data);
-    } catch (error) {
-      console.error('Erro ao enviar dados:', error);
-    }
-  };
-
-  const checkIfIdExists = async (id) => {
-    try {
-      const response = await api.get(`/usuarios/${id}`);
-      return response.data.exists;
-    } catch (error) {
-      console.error('Erro ao verificar o ID:', error);
-      return false;
-    }
-  };
-
-  const generateUniqueId = async () => {
-    let id = currentId;
-    const maxAttempts = 100;
-
-    for (let i = 0; i < maxAttempts; i++) {
-      if (!(await checkIfIdExists(id))) {
-        return id;
-      }
-      id += 1;
-    }
-
-    console.error('Não foi possível gerar um ID único após várias tentativas.');
-  };
-
-
-  /// Gera numeros aleatorios
-  const gerarNumerosAleatorios = () => {
-    const gerarNumeroAleatorio = (max) => Math.floor(Math.random() * max) + 1;
-    const numeros = new Set();
-
-  
-    if (nCotasGeradas > quantidadeCotasRifa) {
-      console.warn("A quantidade desejada de números a serem gerados é maior que a quantidade total disponível na rifa.");
-      return [];
-    }
-  
-    let tentativas = 0;
-    const maxTentativas = 1000; // Limite de tentativas para evitar loop infinito
-  
-    while (numeros.size < nCotasGeradas && tentativas < maxTentativas) {
-      const numeroAleatorio = gerarNumeroAleatorio(quantidadeCotasRifa);
-      if (!todosNumerosDeCotas.includes(numeroAleatorio) && !numeros.has(numeroAleatorio)) {
-        numeros.add(numeroAleatorio);
-      }
-      tentativas++;
-    }
-  
-    if (tentativas >= maxTentativas) {
-      console.warn("Número máximo de tentativas atingido, pode haver um problema com os parâmetros fornecidos.");
-    }
-  
-
-    return Array.from(numeros); // Retorna os números gerados
-  };
-  
-  
-  
-  
-  
-
-
-  ///Envio 
-  const onSubmit = async (formData) => {
-    const numerosGerados = gerarNumerosAleatorios(); // Gerar números antes de enviar dados
-  
-    try {
-      // Verifica se o telefone já existe
-      const response = await api.get(`/usuarios?phone=${formData.phone}`);
-      
-      // Adicione um log para depuração
-      console.log('Resposta da API:', response.data);
-  
-      const usuariosExistentes = Array.isArray(response.data) ? response.data : [];
-      
-      if (usuariosExistentes.length > 0) {
-        // Pega o primeiro usuário encontrado
-        const usuarioExistente = usuariosExistentes[0];
-  
-        // Adicione um log para depuração
-        console.log('Usuário existente:', usuarioExistente);
-  
-        // Verifica se o usuário e as cotas são válidos
-        if (!usuarioExistente || !Array.isArray(usuarioExistente.cotas)) {
-          console.warn('Dados do usuário não encontrados ou estrutura inválida. Usando dados padrão.');
-          const novasCotas = numerosGerados;
-          await api.put(`/usuarios/${usuarioExistente.id}`, {
-            ...usuarioExistente,
-            cotas: novasCotas
-          });
-  
-          console.log('Cotas atualizadas com sucesso:', novasCotas);
-        } else {
-          const cotasExistentes = usuarioExistente.cotas || []; // Garante que cotasExistentes é um array
-          const novasCotas = [...cotasExistentes, ...numerosGerados];
-  
-          await api.put(`/usuarios/${usuarioExistente.id}`, {
-            ...usuarioExistente,
-            cotas: novasCotas
-          });
-  
-          console.log('Cotas atualizadas com sucesso:', novasCotas);
+    useEffect(() => {
+        const storedModalState = localStorage.getItem('modalOpenConfirm');
+        const storedPixData = localStorage.getItem('pixData');
+        const storedTransactionId = localStorage.getItem('transactionId');
+        if (storedModalState === 'true') {
+            setModalOpenConfirm(true);
         }
-      } else {
-        // Se o telefone não existe, criar um novo usuário com os números gerados
-        const uniqueId = await generateUniqueId();
-        await api.post('/usuarios', {
-          id: uniqueId,
-          name: formData.name,
-          phone: formData.phone,
-          cotas: numerosGerados
-        });
-  
-        console.log('Dados enviados com sucesso:', { id: uniqueId, name: formData.name, phone: formData.phone, cotas: numerosGerados });
-        setCurrentId(uniqueId + 1);
-      }
-  
-    } catch (error) {
-      console.error('Erro ao verificar ou enviar dados:', error);
-    }
-  
-    reset();
-    handleCloseModal();
-    window.location.reload();
-  };
-  
+        if (storedPixData) {
+            setPixData(JSON.parse(storedPixData));
+        }
+        if (storedTransactionId) {
+            setTransactionId(storedTransactionId);
+        }
+    }, []);
 
-  return (
-    <UtilsContext.Provider value={{
-      limiteCotas,
-      inputBloqueado, setInputBloqueado,
-      register, errors,
-      nCotasGeradas, setNCotasGeradas,
-      onSubmit, modalRef,
-      quantidadeCotasRifa, setQuantidadeCotasRifa,
-      valorCotasRifa, setValorCotasRifa,
-      setModalOpen, modalOpen,
-      isModalOpen, handleOpenModalCotas, handleCloseModalCotas,
-      handleOpenModal, handleCloseModal,
-      handleInputChange, handleInputChangeQ, handleSalvar, handleSubmit,
-    }}>
-      {children}
-    </UtilsContext.Provider>
-  );
+    
+
+    
+    const clearPixData = () => {
+        setPixData(null);
+        localStorage.removeItem('pixData');
+        localStorage.removeItem('transactionId');
+    };
+    
+    const setAndStorePixData = (data) => {
+        setPixData(data);
+        localStorage.setItem('pixData', JSON.stringify(data));
+    };
+    
+    const setAndStoreTransactionId = (id) => {
+        setTransactionId(id);
+        localStorage.setItem('transactionId', id);
+    };
+    
+    const modalRef = useRef(null);
+    const intervalRef = useRef(null);
+    
+    const handleOpenConfirmModal = () => {
+        setModalOpenConfirm(true);
+        setIsConfirmModalOpened(true);
+        localStorage.setItem('modalOpenConfirm', 'true');
+        setStatus(null);
+    };
+
+    const handleCloseConfirmModal = () => {
+        setModalOpenConfirm(false);
+        setModalOpen(false);
+        clearPixData();
+        setTimeLeft(0);
+        setStatus(null);
+        setIsConfirmModalOpened(false);
+        localStorage.removeItem('modalOpenConfirm');
+        localStorage.removeItem('status');
+        reset();
+        window.location.reload();
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current); // Limpa o intervalo
+        }
+    };
+
+    const handleOpenModal = () => setModalOpen(true);
+    const handleCloseModal = () => {
+        setModalOpen(false);
+        reset();
+        window.location.reload();
+    }
+
+
+
+
+
+    const gerarNumerosAleatorios = () => {
+        const gerarNumeroAleatorio = (max) => Math.floor(Math.random() * max) + 1;
+        const numeros = new Set();
+
+        if (nCotasGeradas > nCotas) {
+            console.warn("A quantidade desejada de números a serem gerados é maior que a quantidade total disponível na rifa.");
+            return [];
+        }
+
+        let tentativas = 0;
+        const maxTentativas = 1000;
+
+        while (numeros.size < nCotasGeradas && tentativas < maxTentativas) {
+            const numeroAleatorio = gerarNumeroAleatorio(nCotas);
+            if (!listCotas.includes(numeroAleatorio) && !numeros.has(numeroAleatorio)) {
+                numeros.add(numeroAleatorio);
+            }
+            tentativas++;
+        }
+
+        if (tentativas >= maxTentativas) {
+            console.warn("Número máximo de tentativas atingido, pode haver um problema com os parâmetros fornecidos.");
+        }
+
+        return Array.from(numeros);
+    };
+
+    const onSubmit = async (formData) => {
+        const cotasGeradas = gerarNumerosAleatorios();
+        const pixData = new URLSearchParams();
+        const valor = valorTotalCotas.toFixed(2);
+        pixData.append('total', valor);
+        pixData.append('name', formData.name);
+        pixData.append('phone', formData.phone); 
+    
+        const dataToSend = {
+            name: formData.name,
+            phone: formData.phone,
+            cotas: cotasGeradas.join(', '),
+        };
+    
+        try {
+            // Primeiro, envie os dados para a API Pix
+            const responsePix = await pix.post('/gravar.php', pixData, {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            });
+    
+            const newTransactionId = responsePix.data.id;
+            setAndStorePixData(responsePix.data);
+            setAndStoreTransactionId(newTransactionId);
+    
+            // Agora verifique o status da transação
+            let statusAprovado = false;
+            while (!statusAprovado) {
+                const statusResponse = await pix.get(`/status.php?id=${newTransactionId}`);
+                if (statusResponse.data.status === 'aprovado') {
+                    statusAprovado = true;
+                    // Envie os dados para a API /usuarios
+                    await api.post('/usuarios', dataToSend);
+                    window.location.reload();
+                    reset(); // Limpe o formulário após o sucesso
+                } else if (statusResponse.data.error) {
+                    console.error('Error from server:', statusResponse.data.error);
+                    break; // Encerre o loop se houver erro
+                }
+    
+                // Aguarde um tempo antes de verificar o status novamente
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+        } catch (error) {
+            console.error('Erro ao enviar dados para a API:', error.response ? error.response.data : error.message);
+        }
+    };
+    
+
+    useEffect(() => {
+        setValorTotalCotas(valorCotas * nCotasGeradas);
+    }, [valorCotas, nCotasGeradas]);
+
+ // Function to fetch status
+const fetchStatus = async () => {
+    if (!transactionId) {
+        console.warn('Transaction ID is not set');
+        return;
+    }
+
+    try {
+        const response = await pix.get(`/status.php?id=${transactionId}`);
+
+        if (response.data.status) {
+            const newStatus = response.data.status;
+            if (newStatus !== status) {
+
+                setStatus(newStatus);
+                localStorage.setItem('status', newStatus);
+
+                // Fechar o modal se o status for 'aprovado'
+                if (newStatus === 'aprovado') {
+
+                    handleCloseConfirmModal();
+                }
+            }
+        } else if (response.data.error) {
+            console.error('Error from server:', response.data.error);
+        }
+    } catch (error) {
+        console.error('Erro ao buscar status:', error);
+    }
+};
+
+
+    
+
+    // Polling status every 2 seconds
+    useEffect(() => {
+        if (isConfirmModalOpened && transactionId) {
+
+            intervalRef.current = setInterval(() => {
+                fetchStatus();
+            }, 2000);
+        }
+    
+        return () => {
+            if (intervalRef.current) {
+
+                clearInterval(intervalRef.current); // Limpa o intervalo ao desmontar o componente ou ao fechar o modal
+            }
+        };
+    }, [isConfirmModalOpened, transactionId]);
+
+    // Retrieve status from localStorage on initial load
+    useEffect(() => {
+        const storedStatus = localStorage.getItem('status');
+        if (storedStatus) {
+            setStatus(storedStatus);
+        }
+    }, []);
+
+    return (
+        <UtilsContext.Provider value={{
+
+            inputBloqueado,
+            setInputBloqueado,
+            register,
+            errors,
+            onSubmit,
+            modalRef,
+            nCotasGeradas,
+            setNCotasGeradas,
+            setModalOpen,
+            modalOpen,
+            handleOpenModal,
+            handleCloseModal,
+            handleSubmit,
+            valorTotalCotas,
+            pixData,
+            handleOpenConfirmModal,
+            modalOpenConfirm,
+            clearPixData,
+            handleCloseConfirmModal,
+            timeLeft,
+            setTimeLeft,
+            status, isConfirmModalOpened
+        }}>
+            {children}
+        </UtilsContext.Provider>
+    );
 };

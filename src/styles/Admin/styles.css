@@ -25,3 +25,10 @@
         border-radius: 4px;
     }
 }
+
+.Save {
+    padding: 5px 15px;
+    border-radius: 4px;
+    box-shadow: 2px 4px 5px #0000004a;
+    cursor: pointer;
+}
